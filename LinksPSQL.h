@@ -18,8 +18,6 @@ namespace Platform::Data::Doublets
             w.exec(query);
         }
         
-        LinksPSQL() = default;
-        
         virtual ~LinksPSQL()
         {
             w.commit();
