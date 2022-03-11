@@ -1,5 +1,4 @@
 #include <pqxx/pqxx>
-#include <pqxx/connection_base>
 
 namespace Platform::Data::Doublets
 {
@@ -21,12 +20,12 @@ namespace Platform::Data::Doublets
         virtual ~LinksPSQL()
         {
             w.commit();
-            c.disconnect();
+            c.close();
         }
         
-        auto Exists(auto&& restrictions) -> bool
+        auto Exists(auto&& Index) -> bool
         {
-            pqxx::result r = w.exec("SELECT * FROM Links WHERE id = " + std::to_string(restrictions[0]) + ";");
+            pqxx::result r = n.exec("SELECT * FROM Links WHERE id = " + std::to_string(Index) + ";");
             if(r[0][0].c_str()=="")
                 return false;
             else
@@ -36,21 +35,20 @@ namespace Platform::Data::Doublets
         auto Create(Interfaces::CArray auto&& substitutions) -> void
         {
             query = "SELECT * FROM Links;";
-            pqxx::result r = w.exec(query);
-            TLink last_id = r[r.size()-1][0].as<TLink>();
-            query = "INSERT INTO Links VALUES (" + std::to_string(last_id+1) + ", " 
-            + std::to_string(substitutions[0]) + ", " + std::to_string(substitutions[1]) + ");";
-            w.exec(query);
+            pqxx::result r = n.exec(query);
+            query = "INSERT INTO Links VALUES (" + std::to_string(1) + ", " 
+            + std::to_string(substitutions[0]) + ", " + std::to_string(substitutions[1]) + ")";
+            w.exec(q);
         }
         
         auto Update(Interfaces::CArray auto&& restrictions, Interfaces::CArray auto&& substitutions) -> void
         {
-            if (std::size(restrictions)==1)
+            if (std::size(restrictions)==1 || std::size(restrictions)==3)
             {
                 query = "UPDATE Links SET from_id = " + std::to_string(substitutions[0]) + ", to_id = "
                 + std::to_string(substitutions[1]) + " WHERE id = " + std::to_string(restrictions[0]) + ";";  
             }
-            else if(std::size(restrictions)==2)
+            if(std::size(restrictions)==2)
             {
                 query = "UPDATE Links SET from_id = " + std::to_string(substitutions[0]) + ", to_id = "
                 + std::to_string(substitutions[1]) + " WHERE from_id = " + std::to_string(restrictions[0])
@@ -61,7 +59,7 @@ namespace Platform::Data::Doublets
         
         auto Delete(Interfaces::CArray auto&& restrictions) -> void
         {
-            if(!this->Exists(restrictions))
+            if(!this->Exists(restrictions[0]))
                 std::cerr<<"You can`t delete non-existent link.";
             else
             {
@@ -84,7 +82,7 @@ namespace Platform::Data::Doublets
             if (restrictions[0] == constants.Any && restrictions[1] != constants.Any && restrictions[2] != constants.Any)
                 query = "SELECT COUNT(*) FROM Links WHERE from_id = " + std::to_string(restrictions[1]) + "AND to_id = " + std::to_string(restrictions[2]) + ";";
             pqxx::result r = w.exec(query);
-            return std::stoi(r[0][0].c_str());
+            return r[0][0].as<int>();
         }
         
         auto Each(Interfaces::CArray auto&& restrictions) -> void /*requires requires {std::integral<TLink>;}*/
@@ -114,9 +112,9 @@ namespace Platform::Data::Doublets
         }
         
         private: std::string opts{};
-        private: std::string query{};
+        private: std::string_view query{};
         
-        private: pqxx::asyncconnection c{opts};
+        private: pqxx::connection c{opts};
         private: pqxx::work w{c};
     };
 }
