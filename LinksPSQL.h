@@ -5,7 +5,6 @@ namespace Platform::Data::Doublets
     template<typename TLink>
     struct LinksPSQL: public ILinks<LinksPSQL<TLink>, TLink>
     {
-        
         auto foo() -> std::string //test
         {
             return c.dbname();
@@ -25,33 +24,33 @@ namespace Platform::Data::Doublets
         
         auto Exists(auto&& Index) -> bool
         {
-            pqxx::result r = n.exec("SELECT * FROM Links WHERE id = " + std::to_string(Index) + ";");
+            pqxx::result r = w.exec("SELECT * FROM Links WHERE id = " + std::to_string(Index) + ";");
             if(r[0][0].c_str()=="")
                 return false;
             else
                 return true;
         }
         
-        auto Create(Interfaces::CArray auto&& substitutions) -> void
+        auto Create(Interfaces::CArray auto&& substitution) -> void
         {
             query = "SELECT * FROM Links;";
-            pqxx::result r = n.exec(query);
+            pqxx::result r = w.exec(query);
             query = "INSERT INTO Links VALUES (" + std::to_string(1) + ", " 
-            + std::to_string(substitutions[0]) + ", " + std::to_string(substitutions[1]) + ")";
-            w.exec(q);
+            + std::to_string(substitution[0]) + ", " + std::to_string(substitution[1]) + ")";
+            w.exec(query);
         }
         
-        auto Update(Interfaces::CArray auto&& restrictions, Interfaces::CArray auto&& substitutions) -> void
+        auto Update(Interfaces::CArray auto&& restrictions, Interfaces::CArray auto&& substitution) -> void
         {
             if (std::size(restrictions)==1 || std::size(restrictions)==3)
             {
-                query = "UPDATE Links SET from_id = " + std::to_string(substitutions[0]) + ", to_id = "
-                + std::to_string(substitutions[1]) + " WHERE id = " + std::to_string(restrictions[0]) + ";";  
+                query = "UPDATE Links SET from_id = " + std::to_string(substitution[0]) + ", to_id = "
+                + std::to_string(substitution[1]) + " WHERE id = " + std::to_string(restrictions[0]) + ";";  
             }
             if(std::size(restrictions)==2)
             {
-                query = "UPDATE Links SET from_id = " + std::to_string(substitutions[0]) + ", to_id = "
-                + std::to_string(substitutions[1]) + " WHERE from_id = " + std::to_string(restrictions[0])
+                query = "UPDATE Links SET from_id = " + std::to_string(substitution[0]) + ", to_id = "
+                + std::to_string(substitution[1]) + " WHERE from_id = " + std::to_string(restrictions[0])
                 + "AND to_id = " + std::to_string(restrictions[1]) + ";";
             }
             w.exec(query);
