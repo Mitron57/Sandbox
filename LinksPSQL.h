@@ -74,7 +74,7 @@ namespace Platform::Data::Doublets
             return result[0][0].as<int>();
         }
         
-        auto Each(Interfaces::CArray auto&& restrictions) -> void /*requires requires {std::integral<TLink>;}*/
+        auto Each(Interfaces::CArray auto&& restrictions) -> void
         {
             LinksConstants<TLink> constants;
             if (restrictions[0] == constants.Any && restrictions[1] == constants.Any && restrictions[2] == constants.Any)
