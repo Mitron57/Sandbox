@@ -70,8 +70,7 @@ namespace Platform::Data::Doublets
                 query = "SELECT COUNT(*) FROM Links WHERE to_id = " + std::to_string(restrictions[2]) + ";";
             else if (restrictions[0] == constants.Any && restrictions[1] != constants.Any && restrictions[2] != constants.Any)
                 query = "SELECT COUNT(*) FROM Links WHERE from_id = " + std::to_string(restrictions[1]) + "AND to_id = " + std::to_string(restrictions[2]) + ";";
-            line.insert(query);
-            auto result = line.retrieve().second;
+            auto result = line.retrieve(line.insert(query));
             return result[0][0].as<int>();
         }
         
@@ -88,8 +87,7 @@ namespace Platform::Data::Doublets
                 query = "SELECT * FROM Links WHERE to_id = " + std::to_string(restrictions[2]) + ";";
             else if (restrictions[0] == constants.Any && restrictions[1] != constants.Any && restrictions[2] != constants.Any)
                 query = "SELECT * FROM Links WHERE from_id = " + std::to_string(restrictions[1]) + "AND to_id = " + std::to_string(restrictions[2]) + ";";
-            line.insert(query);
-            auto result = line.retrieve().second;
+            auto result = line.retrieve(line.insert(query));
             Link<TLink> link (0, 0, 0);
             for(int i{}; i<result.size(); i++)
             {
